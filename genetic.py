@@ -47,22 +47,41 @@ def isAllCitiesVisited(state):
         if sum(city) == 0: return False 
     return True 
 
+def calculateF1Bonus(state):
+    if isAllCitiesVisited(state): return 100
+    return 0
+
 def calculateF2Bonus(state):
     transposed = np.transpose(state)
+    revenue = np.transpose(calculateRevenue(state))
     bonuses = []
-    for city in transposed:
-        cityTotal = sum(city)
+    for index, city in enumerate(transposed):
+        cityRevenue = sum(revenue[index])
         difference = (max(city) - min(city))
         bonusPercentage = max(20 - difference, 0)
-        bonus = bonusPercentage * cityTotal / 100
+        bonus = bonusPercentage * cityRevenue / 100
         bonuses.append(bonus)
-    return sum(bonuses)
+    return bonuses, sum(bonuses)
+
+def generatePriceMatrix():
+    return np.array([
+        [1,4,6,4,4],
+        [3,8,2,5,15],
+        [3,12,3,5,5],
+        [2,6,10,2,4],
+        [10,5,12,6,3],
+    ])
+
+def calculateRevenue(state):
+    return state * priceMatrix
 
 N = 8 # population size
 population = [generateRandomIndividual() for _ in range(N)]
+priceMatrix = generatePriceMatrix()
 # printPopulation(population)
-
 print(population[0])
+print(calculateRevenue(population[0]))
+print(calculateF1Bonus(population[0]))
 print(calculateF2Bonus(population[0]))
 # x = generateRandomIndividual()
 # print(x)
