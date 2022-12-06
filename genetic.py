@@ -42,13 +42,14 @@ class Individual:
             if self.is150ItemsSold(state):  
                 return state
 
-    def printIndividualState(self):
+    def printState(self):
         print('\tx1\tx2\tx3\tx4\tx5')
         print('A\t'+'\t'.join(str(num) for num in self.state[0]))
         print('B\t'+'\t'.join(str(num) for num in self.state[1]))
         print('C\t'+'\t'.join(str(num) for num in self.state[2]))
         print('D\t'+'\t'.join(str(num) for num in self.state[3]))
         print('E\t'+'\t'.join(str(num) for num in self.state[4]))
+        print()
 
     def is150ItemsSold(self,state):
         return sum(state.flatten()) == 150 
@@ -58,8 +59,6 @@ class Individual:
         return 0
 
     def calculateF2Bonus(self):
-        # transposed = np.transpose(state)
-        # revenue = np.transpose(calculateRevenueMatrix(state))
         bonuses = []
         for index, city in enumerate(self.transposed):
             cityRevenue = sum(self.revenueMatrixTransposed[index])
@@ -70,8 +69,6 @@ class Individual:
         return sum(bonuses)
 
     def calculateF3Bonus(self):
-        # transposed = np.transpose(state)
-        # fbase = calculateTotalRevenue(state)
         itemsSoldPerCity = [sum(city) for city in self.transposed]
         difference = max(itemsSoldPerCity) - min(itemsSoldPerCity)
         bonusPercentage = max(20 - difference, 0)
@@ -79,29 +76,44 @@ class Individual:
         return bonus
 
     def isAllCitiesVisited(self):
-        # transposed = np.transpose(state)
         for city in self.transposed:
             if sum(city) == 0: return False 
         return True 
 
-    def printIndividualProperties(self):
+    def printAllProperties(self):
         print('Individual State:')
-        self.printIndividualState()
+        self.printState()
         print('Matrix:\n', self.state)
-        print('Transposed:\n', self.transposed)
-        print('Revenue Matrix:\n', self.revenueMatrix)
+        print('\nTransposed Matrix:\n', self.transposed)
+        print('\nRevenue Matrix:\n', self.revenueMatrix)
+        print('\nfbase:', self.fbase)
+        print('f1:', self.f1)
+        print('f2:', self.f2)
+        print('f3:', self.f3)
+        print('f:', self.f)
+        print()
+
+    def printProperties(self):
+        print('Individual State:')
+        self.printState()
         print('fbase:', self.fbase)
         print('f1:', self.f1)
         print('f2:', self.f2)
         print('f3:', self.f3)
         print('f:', self.f)
+        print() 
 
-
-
-def printPopulation(population):
+def printPopulationState(population):
     for individual in population:
-        printIndividualState(individual)
-        print()
+        individual.printState()
+
+def printPopulationProperties(population):
+    for index, individual in enumerate(population):
+        print(f'Individual {index + 1}:  {individual.f}')
+    
+def printPopulationFitness(population):
+    for individual in population:
+        individual.printProperties()
 
 def generatePriceMatrix():
     return np.array([
@@ -112,23 +124,51 @@ def generatePriceMatrix():
         [10,5,12,6,3],
     ])
 
+def selection(population):
+    fitness = [individual.f for individual in population]
+    return random.choices(population, fitness, k=N)
 
-N = 8 # population size
+def crossover(population):
+    for index in range(N//2):
+        # generate the number of cities to interchange/crossover
+        count = random.randint(1, 4) 
+        print(f'count: {count}')
+        # choose the cities that will be exchanged randomly
+        cities = random.sample(range(5), count)
+        print(f'cities: {cities}')
+        print('before:')
+
+        population[index * 2].printState()
+        population[index * 2 + 1].printState()
+
+
+        temp1 = np.copy(population[index * 2].transposed)
+        temp2 = np.copy(population[index * 2 + 1].transposed)
+
+        for city in cities:
+            temp1[city], temp2[city] = temp2[city].copy(), temp1[city].copy()
+
+        print('after:')
+        print(np.transpose(temp1))
+        print(np.transpose(temp2))
+
+
+INITIAL_SIZE = 32 # Initial population size
+N = 2 # Initial population size
+LIMIT = 50
+highestFitness = 0
+# bestIndividual = 
+iterationsSinceBest = 0
 priceMatrix = generatePriceMatrix()
+# population = [Individual() for _ in range(INITIAL_SIZE)]
+# printPopulationProperties(population)
+# printPopulationProperties(selection(population))
 
-# population = [Individual() for _ in range(N)]
-node = Individual()
-node.printIndividualProperties()
-
-# printPopulation(population)
-
-# print(calculateRevenueMatrix(population[0]))
-# print(calculateF1Bonus(population[0]))
-# print(calculateF2Bonus(population[0]))
+population = [Individual() for _ in range(N)]
+# selection = selection(population)
+crossover(population)
 
 
+# while True:
 
-# x = generateRandomIndividual()
-# print(x)
-# print(np.transpose(x))
-# printIndividualState(x)
+
