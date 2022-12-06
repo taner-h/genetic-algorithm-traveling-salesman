@@ -65,14 +65,11 @@ def calculateF2Bonus(state):
 
 def calculateF3Bonus(state):
     transposed = np.transpose(state)
-    revenueMatrix = calculateRevenueMatrix(state)
-    fbase = sum(revenueMatrix.flatten())
+    fbase = calculateTotalRevenue(state)
     itemsSoldPerCity = [sum(city) for city in transposed]
     difference = max(itemsSoldPerCity) - min(itemsSoldPerCity)
     bonusPercentage = max(20 - difference, 0)
     bonus = bonusPercentage * fbase / 100 
-    
-    
 
 def generatePriceMatrix():
     return np.array([
@@ -86,8 +83,8 @@ def generatePriceMatrix():
 def calculateRevenueMatrix(state):
     return state * priceMatrix
 
-# def calculateTotalRevenue(state):
-#     return sum(calculateRevenueMatrix(state).flatten())
+def calculateTotalRevenue(state):
+    return sum(calculateRevenueMatrix(state).flatten())
 
 N = 8 # population size
 population = [generateRandomIndividual() for _ in range(N)]
