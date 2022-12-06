@@ -53,7 +53,7 @@ def calculateF1Bonus(state):
 
 def calculateF2Bonus(state):
     transposed = np.transpose(state)
-    revenue = np.transpose(calculateRevenue(state))
+    revenue = np.transpose(calculateRevenueMatrix(state))
     bonuses = []
     for index, city in enumerate(transposed):
         cityRevenue = sum(revenue[index])
@@ -62,6 +62,17 @@ def calculateF2Bonus(state):
         bonus = bonusPercentage * cityRevenue / 100
         bonuses.append(bonus)
     return bonuses, sum(bonuses)
+
+def calculateF3Bonus(state):
+    transposed = np.transpose(state)
+    revenueMatrix = calculateRevenueMatrix(state)
+    fbase = sum(revenueMatrix.flatten())
+    itemsSoldPerCity = [sum(city) for city in transposed]
+    difference = max(itemsSoldPerCity) - min(itemsSoldPerCity)
+    bonusPercentage = max(20 - difference, 0)
+    bonus = bonusPercentage * fbase / 100 
+    
+    
 
 def generatePriceMatrix():
     return np.array([
@@ -72,17 +83,23 @@ def generatePriceMatrix():
         [10,5,12,6,3],
     ])
 
-def calculateRevenue(state):
+def calculateRevenueMatrix(state):
     return state * priceMatrix
+
+# def calculateTotalRevenue(state):
+#     return sum(calculateRevenueMatrix(state).flatten())
 
 N = 8 # population size
 population = [generateRandomIndividual() for _ in range(N)]
 priceMatrix = generatePriceMatrix()
 # printPopulation(population)
 print(population[0])
-print(calculateRevenue(population[0]))
-print(calculateF1Bonus(population[0]))
-print(calculateF2Bonus(population[0]))
+# print(calculateRevenueMatrix(population[0]))
+# print(calculateF1Bonus(population[0]))
+# print(calculateF2Bonus(population[0]))
+
+calculateF3Bonus(population[0])
+
 # x = generateRandomIndividual()
 # print(x)
 # print(np.transpose(x))
