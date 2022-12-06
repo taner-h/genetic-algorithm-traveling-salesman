@@ -2,8 +2,8 @@ import random
 import numpy as np
 
 class Individual:
-    def __init__(self):
-        self.state = self.generateRandomIndividual()
+    def __init__(self, state):
+        self.state = state
         self.transposed = np.transpose(self.state)
         self.revenueMatrix = self.calculateRevenueMatrix()
         self.revenueMatrixTransposed = np.transpose(self.revenueMatrix)
@@ -19,29 +19,6 @@ class Individual:
     def calculateTotalRevenue(self):
         return sum(self.revenueMatrix.flatten())
 
-    def generateSoldItemCount(self, count):
-        while True:
-            items = [random.random() for _ in range(5)]
-            total = sum(items)
-            # round() method ensures that elements are natural number (Hard Constraint #1)
-            items = [round(count * item / total) for item in items]
-            # Make sure sold item amounts is equal to the stock (Hard Constraint #3)
-            if sum(items) == count:
-                return items
-
-    def generateRandomIndividual(self):
-        while True:
-            x1 = self.generateSoldItemCount(30)
-            x2 = self.generateSoldItemCount(40)
-            x3 = self.generateSoldItemCount(20)
-            x4 = self.generateSoldItemCount(40)
-            x5 = self.generateSoldItemCount(20)
-
-            state = np.array([x1, x2, x3, x4, x5])
-            # Make sure that exactly 150 items is sold (Hard Constraint #2)
-            if self.is150ItemsSold(state):  
-                return state
-
     def printState(self):
         print('\tx1\tx2\tx3\tx4\tx5')
         print('A\t'+'\t'.join(str(num) for num in self.state[0]))
@@ -51,8 +28,6 @@ class Individual:
         print('E\t'+'\t'.join(str(num) for num in self.state[4]))
         print()
 
-    def is150ItemsSold(self,state):
-        return sum(state.flatten()) == 150 
 
     def calculateF1Bonus(self):
         if self.isAllCitiesVisited(): return 100
@@ -107,11 +82,11 @@ def printPopulationState(population):
     for individual in population:
         individual.printState()
 
-def printPopulationProperties(population):
+def printPopulationFitness(population):
     for index, individual in enumerate(population):
         print(f'Individual {index + 1}:  {individual.f}')
     
-def printPopulationFitness(population):
+def printPopulationProperties(population):
     for individual in population:
         individual.printProperties()
 
@@ -124,11 +99,42 @@ def generatePriceMatrix():
         [10,5,12,6,3],
     ])
 
+def generateSoldItemCount(count):
+    while True:
+        items = [random.random() for _ in range(5)]
+        total = sum(items)
+        # round() method ensures that elements are natural number (Hard Constraint #1)
+        items = [round(count * item / total) for item in items]
+        # Make sure sold item amounts is equal to the stock (Hard Constraint #3)
+        if sum(items) == count:
+            return items
+
+def generateRandomIndividual():
+    while True:
+        x1 = generateSoldItemCount(30)
+        x2 = generateSoldItemCount(40)
+        x3 = generateSoldItemCount(20)
+        x4 = generateSoldItemCount(40)
+        x5 = generateSoldItemCount(20)
+
+        state = np.array([x1, x2, x3, x4, x5])
+        # Make sure that exactly 150 items is sold (Hard Constraint #2)
+        if is150ItemsSold(state):  
+            return state
+
+def is150ItemsSold(state):
+    return sum(state.flatten()) == 150 
+
+def initializePopulation():
+    states = [generateRandomIndividual() for _ in range(N)]
+    return [Individual(state) for state in states]
+
 def selection(population):
     fitness = [individual.f for individual in population]
     return random.choices(population, fitness, k=N)
 
 def crossover(population):
+    newPopulation = []
     for index in range(N//2):
         # generate the number of cities to interchange/crossover
         count = random.randint(1, 4) 
@@ -148,27 +154,37 @@ def crossover(population):
         for city in cities:
             temp1[city], temp2[city] = temp2[city].copy(), temp1[city].copy()
 
+        newPopulation.append(Individual(np.transpose(temp1)))
+        newPopulation.append(Individual(np.transpose(temp2)))
         print('after:')
-        print(np.transpose(temp1))
-        print(np.transpose(temp2))
+        newPopulation[index * 2].printState()
+        newPopulation[index * 2 + 1].printState()
+
+        # print(np.transpose(temp1))
+        # print(np.transpose(temp2))
+    return newPopulation
 
 
 INITIAL_SIZE = 32 # Initial population size
-N = 2 # Initial population size
+N = 4 # Initial population size
 LIMIT = 50
 highestFitness = 0
 # bestIndividual = 
 iterationsSinceBest = 0
 priceMatrix = generatePriceMatrix()
-# population = [Individual() for _ in range(INITIAL_SIZE)]
-# printPopulationProperties(population)
-# printPopulationProperties(selection(population))
-
-population = [Individual() for _ in range(N)]
-# selection = selection(population)
-crossover(population)
 
 
-# while True:
+population = initializePopulation()
+printPopulationState(population)
+printPopulationFitness(population)
+
+selection = selection(population)
+population = crossover(population)
+printPopulationState(population)
+printPopulationFitness(population)
+
+# population = initializePopulation(N)
+# printPopulationState(population)
+
 
 
