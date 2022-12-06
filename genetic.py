@@ -41,12 +41,16 @@ def is150ItemsSold(state):
     return sum(state.flatten()) == 150 
 
 
-
+def isAllCitiesVisited(state):
+    transposed = np.transpose(state)
+    for city in transposed:
+        if sum(city) == 0: return False 
+    return True 
 
 N = 8 # population size
 population = [generateRandomIndividual() for _ in range(N)]
-printPopulation(population)
-
+# printPopulation(population)
+print(isAllCitiesVisited(population[0]))
 
 # x = generateRandomIndividual()
 # print(x)
