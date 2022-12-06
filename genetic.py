@@ -47,11 +47,23 @@ def isAllCitiesVisited(state):
         if sum(city) == 0: return False 
     return True 
 
+def calculateF2Bonus(state):
+    transposed = np.transpose(state)
+    bonuses = []
+    for city in transposed:
+        cityTotal = sum(city)
+        difference = (max(city) - min(city))
+        bonusPercentage = max(20 - difference, 0)
+        bonus = bonusPercentage * cityTotal / 100
+        bonuses.append(bonus)
+    return sum(bonuses)
+
 N = 8 # population size
 population = [generateRandomIndividual() for _ in range(N)]
 # printPopulation(population)
-print(isAllCitiesVisited(population[0]))
 
+print(population[0])
+print(calculateF2Bonus(population[0]))
 # x = generateRandomIndividual()
 # print(x)
 # print(np.transpose(x))
