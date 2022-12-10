@@ -11,6 +11,7 @@ class Individual:
         self.f1 = self.calculateF1Bonus()
         self.f2 = self.calculateF2Bonus()
         self.f3 = self.calculateF3Bonus()
+        self.hasAllBonuses = self.f1 and self.f2 and self.f3
         self.f = self.fbase + self.f1 + self.f2 + self.f3
 
     def calculateRevenueMatrix(self):
@@ -26,7 +27,11 @@ class Individual:
         print('C\t'+'\t'.join(str(num) for num in self.state[2])+'\t'+str(sum(self.state[2])))
         print('D\t'+'\t'.join(str(num) for num in self.state[3])+'\t'+str(sum(self.state[3])))
         print('E\t'+'\t'.join(str(num) for num in self.state[4])+'\t'+str(sum(self.state[4])))
-        print()
+        print(f'Total\t{str(sum(self.transposed[0]))}', end='')
+        print(f'\t{str(sum(self.transposed[1]))}', end='')
+        print(f'\t{str(sum(self.transposed[2]))}', end='')
+        print(f'\t{str(sum(self.transposed[3]))}', end='')
+        print(f'\t{str(sum(self.transposed[4]))}\t150\n')
 
 
     def calculateF1Bonus(self):
@@ -70,9 +75,11 @@ class Individual:
         city = random.choice(range(5))
         items = random.sample(range(5), 2)
 
-        # If the element is to be decreased, make sure that it doesn't go below zerp
+        # If the element is to be decreased, 
+        # make sure that it doesn't go below zero
         decreaseLimit = self.state[city][items[0]] 
-        # If the element is to be increased, make sure that the other element to be decreased doesn't go below zerp
+        # If the element is to be increased, make sure that 
+        # the other element to be decreased doesn't go below zero
         increaseLimit = self.state[city][items[1]]
         operation = random.choice(['INCREASE', 'DECREASE'])
         if operation == 'INCREASE':
@@ -139,9 +146,11 @@ def generateSoldItemCount(count):
     while True:
         items = [random.random() for _ in range(5)]
         total = sum(items)
-        # round() method ensures that elements are natural number (Hard Constraint #1)
+        # round() method ensures that elements are natural number 
+        # (Hard Constraint #1)
         items = [round(count * item / total) for item in items]
-        # Make sure sold item amounts is equal to the stock (Hard Constraint #3)
+        # Make sure sold item amounts is equal to the stock 
+        # (Hard Constraint #3)
         if sum(items) == count:
             return items
 
@@ -161,16 +170,11 @@ def generateRandomIndividual():
 def is150ItemsSold(state):
     return sum(state.flatten()) == 150 
 
-def initializePopulation():
-    states = [generateRandomIndividual() for _ in range(INITIAL_SIZE)]
-    return [Individual(state) for state in states]
-
 def selection(population):
-    fitness = [individual.f for individual in population]
+    fitness = [ 10 * individual.f if individual.hasAllBonuses else individual.f for individual in population]
     return random.choices(population, fitness, k=N)
 
 def crossover(population):
-    # printPopulationState(population)
     newPopulation = []
     for index in range(N//2):
         # generate the number of item types to interchange/crossover
@@ -186,13 +190,11 @@ def crossover(population):
 
         newPopulation.append(Individual(temp1))
         newPopulation.append(Individual(temp2))
-    # print('AFTER')
-    # printPopulationState(newPopulation)
 
     return newPopulation
 
 def willMutate():
-    return random.choices([True, False], [0.01, 0.98], k=1)
+    return random.choices([True, False], [0.02, 0.98]  , k=1)
 
 def mutation(population):
     for individual in population:
@@ -209,22 +211,28 @@ def getBestIndividual(population):
     else:
         iterationsSinceBest += 1
     iterationCount += 1
-    print(f'Best: {bestF}')
-    print(f'Best of current iteration: {ordered[0].f}')
-    print(f'Iterations: {iterationCount}')
-    print(f'Iterations since best f-score: {iterationsSinceBest}')
-    print()
+    print(f'Best: {round(bestF, 2)}, Best of iteration: {round(ordered[0].f, 2)}, Iteration: {iterationCount}, Iterations since best f: {iterationsSinceBest}')
+    
 
+def printInfo():
+    print(f'\nBest: {bestF}')
+    print(f'Iterations: {iterationCount}')
+    print(f'Iterations since best f-score: {iterationsSinceBest}\n')
+
+def initializePopulation():
+    states = [generateRandomIndividual() for _ in range(INITIAL_SIZE)]
+    return [Individual(state) for state in states]
 
 def getNBestIndividual(population):
     newPopulation = sorted(population, key=lambda individual: individual.f, reverse=True)
     return newPopulation[:N] 
-         
-INITIAL_SIZE = 128 # Initial population size
+
+INITIAL_SIZE = 1024 # Initial population size
 N = 128 # Initial population size
 LIMIT = 250
 bestF = 0
 bestIndividual = None 
+bestIndividuals = []
 iterationsSinceBest = 0
 iterationCount = 0
 priceMatrix = generatePriceMatrix()
@@ -236,7 +244,8 @@ while iterationsSinceBest < LIMIT:
     population = crossover(selected)
     getBestIndividual(population)
     mutation(population)
-bestIndividual.printProperties()
 
+printInfo()
+bestIndividual.printProperties() 
 
 
